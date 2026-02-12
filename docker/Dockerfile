@@ -41,6 +41,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy Python packages from builder
 COPY --from=builder /root/.local /root/.local
 
+# Add pip user directory to PATH (before switching user)
+ENV PATH=/root/.local/bin:$PATH \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
 # Copy application code
 COPY api/ .
 
@@ -49,13 +54,15 @@ RUN mkdir -p /app/models && chmod 755 /app/models
 
 # Create non-root user for security
 RUN useradd -m -u 1000 appuser && \
-    chown -R appuser:appuser /app
+    chown -R appuser:appuser /app && \
+    mkdir -p /home/appuser/.local && \
+    cp -r /root/.local/* /home/appuser/.local/ && \
+    chown -R appuser:appuser /home/appuser/.local
+
 USER appuser
 
-# Add pip user directory to PATH
-ENV PATH=/root/.local/bin:$PATH \
-    PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+# Update PATH for appuser
+ENV PATH=/home/appuser/.local/bin:$PATH
 
 # Expose API port
 EXPOSE 8000
