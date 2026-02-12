@@ -52,8 +52,8 @@ charts/**/charts/
 *.log
 logs/
 
-# Models
-models/*.pt
+# Models (all .pt files everywhere)
+*.pt
 !models/.gitkeep
 
 # Uploads
