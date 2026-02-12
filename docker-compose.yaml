@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Backend API
+  vision-api:
+    image: astitvaveergarg/vision-api:latest
+    container_name: vision-api
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=host.docker.internal
+      - REDIS_PORT=6379
+      - MINIO_ENDPOINT=host.docker.internal:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_BUCKET=vision-images
+    networks:
+      - vision-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend
+  vision-frontend:
+    image: astitvaveergarg/vision-frontend:latest
+    container_name: vision-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - vision-api
+    networks:
+      - vision-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+networks:
+  vision-network:
+    driver: bridge
