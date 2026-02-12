@@ -1,0 +1,58 @@
+environments:
+  local:
+    values:
+      - environments/local.yaml
+  dev:
+    values:
+      - environments/dev.yaml
+  prod:
+    values:
+      - environments/prod.yaml
+
+---
+
+repositories:
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+  - name: argo
+    url: https://argoproj.github.io/argo-helm
+  - name: minio
+    url: https://charts.min.io/
+
+releases:
+  # Infrastructure Services
+  - name: redis
+    namespace: vision-infra
+    chart: bitnami/redis
+    version: 25.2.0
+    values:
+      - charts/infrastructure/redis/values.yaml
+      - charts/infrastructure/redis/values-local.yaml
+
+  - name: minio
+    namespace: vision-infra
+    chart: minio/minio
+    version: 5.4.0
+    values:
+      - charts/infrastructure/minio/values.yaml
+      - charts/infrastructure/minio/values-local.yaml
+
+  # Monitoring Stack
+  - name: prometheus
+    namespace: vision-monitoring
+    chart: prometheus-community/kube-prometheus-stack
+    version: 56.6.2
+    values:
+      - charts/monitoring/prometheus/values.yaml
+      - charts/monitoring/prometheus/values-local.yaml
+
+  # Application (Phase 3)
+  # - name: vision-api
+  #   namespace: vision-app
+  #   chart: ./charts/api
+  #   values:
+  #     - charts/api/values.yaml
+  #     - charts/api/values-{{ .Environment.Name }}.yaml
+  #   installed: {{ .Values.api.enabled | default false }}

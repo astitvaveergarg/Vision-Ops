@@ -1,0 +1,7 @@
+# Redis Local Environment Overrides
+
+master:
+  service:
+    type: NodePort
+    nodePorts:
+      redis: "30379"  # Access from host machine

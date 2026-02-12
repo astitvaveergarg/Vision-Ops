@@ -1,0 +1,27 @@
+# Web Framework
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.6
+
+# ML/AI
+ultralytics>=8.3.0
+torch>=2.5.0
+torchvision>=0.20.0
+opencv-python>=4.10.0
+pillow>=11.0.0
+
+# Data Processing
+numpy>=2.0.0
+
+# Storage & Caching
+redis>=5.2.0
+boto3>=1.35.0
+minio>=7.2.0
+
+# Monitoring
+prometheus-client>=0.21.0
+
+# Utilities
+pydantic>=2.10.0
+pydantic-settings>=2.6.0
+python-dotenv>=1.0.0

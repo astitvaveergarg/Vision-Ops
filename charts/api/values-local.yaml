@@ -1,0 +1,53 @@
+# Local development overrides (Minikube)
+
+replicaCount: 1
+
+image:
+  repository: vision-api
+  pullPolicy: Never
+  tag: "dev"
+
+service:
+  type: NodePort
+  nodePort: 30800
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    cpu: 250m
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+
+persistence:
+  enabled: false
+
+env:
+  - name: REDIS_HOST
+    value: "localhost"
+  - name: REDIS_PORT
+    value: "6379"
+  - name: MINIO_HOST
+    value: "localhost"
+  - name: MINIO_PORT
+    value: "9000"
+  - name: MINIO_ACCESS_KEY
+    value: "minioadmin"
+  - name: MINIO_SECRET_KEY
+    value: "minioadmin"
+  - name: MINIO_BUCKET
+    value: "vision-images"
+  - name: LOG_LEVEL
+    value: "DEBUG"
+
+ingress:
+  enabled: false
+
+serviceMonitor:
+  enabled: false
+
+podDisruptionBudget:
+  enabled: false

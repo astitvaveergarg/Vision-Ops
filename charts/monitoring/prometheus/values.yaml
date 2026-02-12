@@ -1,0 +1,33 @@
+# Prometheus Stack Base Configuration
+
+# Grafana
+grafana:
+  enabled: true
+  adminPassword: admin
+  # Datasource auto-configured by chart - don't override!
+
+# Prometheus
+prometheus:
+  enabled: true
+  
+  prometheusSpec:
+    retention: 7d
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+# Alertmanager
+alertmanager:
+  enabled: false  # Simplified for local
+
+# Node Exporter
+nodeExporter:
+  enabled: true
+
+# Kube State Metrics
+kubeStateMetrics:
+  enabled: true

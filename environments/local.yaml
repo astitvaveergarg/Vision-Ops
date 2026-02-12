@@ -1,0 +1,22 @@
+# Local Development Environment (Minikube)
+
+# Service Flags
+redis:
+  enabled: true
+
+minio:
+  enabled: true
+
+postgres:
+  enabled: false  # Optional
+
+monitoring:
+  enabled: true
+
+api:
+  enabled: false  # Phase 3
+
+# Global Settings
+global:
+  environment: local
+  domain: vision.local

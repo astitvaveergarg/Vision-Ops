@@ -1,0 +1,29 @@
+# MinIO Official Chart Configuration
+
+mode: standalone
+
+rootUser: minioadmin
+rootPassword: minioadmin
+
+replicas: 1
+
+persistence:
+  enabled: false
+
+resources:
+  requests:
+    memory: 256Mi
+    cpu: 100m
+
+buckets:
+  - name: vision-images
+    policy: none
+    purge: false
+
+service:
+  type: ClusterIP
+  port: 9000
+
+consoleService:
+  type: ClusterIP
+  port: 9001

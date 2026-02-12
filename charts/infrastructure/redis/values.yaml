@@ -1,0 +1,21 @@
+# Redis Base Configuration
+
+architecture: standalone
+
+auth:
+  enabled: false  # Simplified for local dev
+
+master:
+  persistence:
+    enabled: false  # No persistence for local
+  
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+metrics:
+  enabled: false  # Disable to avoid CRD issues

@@ -1,0 +1,16 @@
+apiVersion: v2
+name: vision-api
+description: VisionOps ML inference API with YOLOv8
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - ml
+  - yolo
+  - object-detection
+  - fastapi
+maintainers:
+  - name: VisionOps Team
+home: https://github.com/YOUR_USERNAME/vision
+sources:
+  - https://github.com/YOUR_USERNAME/vision

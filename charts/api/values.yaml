@@ -1,0 +1,184 @@
+# Default values for vision-api
+# This is a YAML-formatted file
+
+replicaCount: 2
+
+image:
+  repository: ghcr.io/YOUR_USERNAME/vision
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8000"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  fsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+  allowPrivilegeEscalation: false
+
+service:
+  type: ClusterIP
+  port: 8000
+  targetPort: 8000
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: api.visionops.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: vision-api-tls
+      hosts:
+        - api.visionops.local
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - vision-api
+          topologyKey: kubernetes.io/hostname
+
+# Environment variables
+env:
+  - name: REDIS_HOST
+    value: "redis-master.vision-infra.svc.cluster.local"
+  - name: REDIS_PORT
+    value: "6379"
+  - name: MINIO_HOST
+    value: "minio.vision-infra.svc.cluster.local"
+  - name: MINIO_PORT
+    value: "9000"
+  - name: MINIO_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: minio-credentials
+        key: access-key
+  - name: MINIO_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: minio-credentials
+        key: secret-key
+  - name: MINIO_BUCKET
+    value: "vision-images"
+  - name: CACHE_TTL
+    value: "3600"
+  - name: DEFAULT_MODEL_ID
+    value: "yolov8n"
+  - name: LOG_LEVEL
+    value: "INFO"
+
+# Persistent volume for model cache
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  mountPath: /app/models
+  annotations: {}
+
+# Health checks
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+# Monitoring
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Network Policy
+networkPolicy:
+  enabled: false
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: vision-infra
+      ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    - to:
+      - namespaceSelector:
+          matchLabels:
+            name: vision-infra
+      ports:
+        - protocol: TCP
+          port: 6379
+        - protocol: TCP
+          port: 9000

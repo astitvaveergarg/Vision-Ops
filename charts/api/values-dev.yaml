@@ -1,0 +1,51 @@
+# Development environment overrides
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/YOUR_USERNAME/vision
+  pullPolicy: Always
+  tag: "latest"
+
+service:
+  type: LoadBalancer
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+
+resources:
+  limits:
+    cpu: 1500m
+    memory: 3Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+
+persistence:
+  enabled: true
+  size: 10Gi
+
+env:
+  - name: LOG_LEVEL
+    value: "DEBUG"
+  - name: DEFAULT_MODEL_ID
+    value: "yolov8n"
+
+ingress:
+  enabled: true
+  hosts:
+    - host: api-dev.visionops.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: vision-api-dev-tls
+      hosts:
+        - api-dev.visionops.com
+
+serviceMonitor:
+  enabled: true

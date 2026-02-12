@@ -1,0 +1,7 @@
+# PostgreSQL Local Environment Overrides
+
+primary:
+  service:
+    type: NodePort
+    nodePorts:
+      postgresql: 30432

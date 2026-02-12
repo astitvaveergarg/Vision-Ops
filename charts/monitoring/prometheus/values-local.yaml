@@ -1,0 +1,11 @@
+# Prometheus Stack Local Environment Overrides
+
+grafana:
+  service:
+    type: NodePort
+    nodePort: 30300  # Access Grafana at localhost:30300
+
+prometheus:
+  service:
+    type: NodePort
+    nodePort: 30090  # Changed from 30900 (conflict with MinIO)
