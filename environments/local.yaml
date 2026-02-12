@@ -14,7 +14,7 @@ monitoring:
   enabled: true
 
 api:
-  enabled: false  # Phase 3
+  enabled: true  # Phase 3
 
 # Global Settings
 global:

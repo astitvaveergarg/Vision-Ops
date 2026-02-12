@@ -3,9 +3,9 @@
 replicaCount: 1
 
 image:
-  repository: vision-api
+  repository: astitvaveergarg/vision-api
   pullPolicy: Never
-  tag: "dev"
+  tag: "latest"
 
 service:
   type: NodePort
@@ -27,11 +27,11 @@ persistence:
 
 env:
   - name: REDIS_HOST
-    value: "localhost"
+    value: "redis-master.vision-infra.svc.cluster.local"
   - name: REDIS_PORT
     value: "6379"
   - name: MINIO_HOST
-    value: "localhost"
+    value: "minio.vision-infra.svc.cluster.local"
   - name: MINIO_PORT
     value: "9000"
   - name: MINIO_ACCESS_KEY

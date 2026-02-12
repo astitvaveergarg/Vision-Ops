@@ -1,0 +1,22 @@
+# Production Environment (AWS EKS / Cloud Kubernetes)
+
+# Service Flags
+redis:
+  enabled: true
+
+minio:
+  enabled: true
+
+postgres:
+  enabled: false
+
+monitoring:
+  enabled: true
+
+api:
+  enabled: true
+
+# Global Settings
+global:
+  environment: prod
+  domain: vision.example.com

@@ -5,6 +5,7 @@ services:
   vision-api:
     image: astitvaveergarg/vision-api:latest
     container_name: vision-api
+    user: root
     ports:
       - "8000:8000"
     environment:

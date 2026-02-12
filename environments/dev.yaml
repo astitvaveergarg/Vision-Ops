@@ -1,0 +1,22 @@
+# Development Environment (Cloud Kubernetes Cluster)
+
+# Service Flags
+redis:
+  enabled: true
+
+minio:
+  enabled: true
+
+postgres:
+  enabled: false
+
+monitoring:
+  enabled: true
+
+api:
+  enabled: true
+
+# Global Settings
+global:
+  environment: dev
+  domain: dev.vision.example.com

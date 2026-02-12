@@ -49,10 +49,10 @@ releases:
       - charts/monitoring/prometheus/values-local.yaml
 
   # Application (Phase 3)
-  # - name: vision-api
-  #   namespace: vision-app
-  #   chart: ./charts/api
-  #   values:
-  #     - charts/api/values.yaml
-  #     - charts/api/values-{{ .Environment.Name }}.yaml
-  #   installed: {{ .Values.api.enabled | default false }}
+  - name: vision-api
+    namespace: vision-app
+    chart: ./charts/api
+    values:
+      - charts/api/values.yaml
+      - charts/api/values-{{ .Environment.Name }}.yaml
+    installed: {{ .Values.api.enabled | default false }}
