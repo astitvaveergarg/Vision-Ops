@@ -30,10 +30,8 @@ env:
     value: "redis-master.vision-infra.svc.cluster.local"
   - name: REDIS_PORT
     value: "6379"
-  - name: MINIO_HOST
-    value: "minio.vision-infra.svc.cluster.local"
-  - name: MINIO_PORT
-    value: "9000"
+  - name: MINIO_ENDPOINT
+    value: "minio.vision-infra.svc.cluster.local:9000"
   - name: MINIO_ACCESS_KEY
     value: "minioadmin"
   - name: MINIO_SECRET_KEY

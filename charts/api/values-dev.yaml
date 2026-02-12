@@ -1,51 +1,81 @@
 # Development environment overrides
 
-replicaCount: 1
+replicaCount: 2
 
 image:
-  repository: ghcr.io/YOUR_USERNAME/vision
+  repository: astitvaveergarg/vision-api
   pullPolicy: Always
   tag: "latest"
 
 service:
-  type: LoadBalancer
+  type: ClusterIP
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
 
 resources:
   limits:
-    cpu: 1500m
-    memory: 3Gi
+    cpu: 2000m
+    memory: 4Gi
   requests:
     cpu: 500m
     memory: 1Gi
 
 autoscaling:
   enabled: true
-  minReplicas: 1
+  minReplicas: 2
   maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
 
 persistence:
   enabled: true
   size: 10Gi
+  storageClass: "gp3"
 
 env:
+  - name: REDIS_HOST
+    value: "redis-master.vision-infra.svc.cluster.local"
+  - name: REDIS_PORT
+    value: "6379"
+  - name: MINIO_ENDPOINT
+    value: "minio.vision-infra.svc.cluster.local:9000"
+  - name: MINIO_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: minio-credentials
+        key: access-key
+  - name: MINIO_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: minio-credentials
+        key: secret-key
+  - name: MINIO_BUCKET
+    value: "vision-images-dev"
   - name: LOG_LEVEL
-    value: "DEBUG"
-  - name: DEFAULT_MODEL_ID
-    value: "yolov8n"
+    value: "INFO"
 
 ingress:
   enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
   hosts:
-    - host: api-dev.visionops.com
+    - host: api-dev.vision.example.com
       paths:
         - path: /
           pathType: Prefix
   tls:
     - secretName: vision-api-dev-tls
       hosts:
-        - api-dev.visionops.com
+        - api-dev.vision.example.com
 
 serviceMonitor:
+  enabled: true
+  interval: 30s
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+networkPolicy:
   enabled: true

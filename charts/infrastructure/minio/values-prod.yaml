@@ -1,0 +1,80 @@
+# MinIO - Production Environment
+
+mode: distributed
+
+replicas: 4
+
+persistence:
+  enabled: true
+  size: 200Gi
+  storageClass: "gp3"
+
+resources:
+  requests:
+    memory: 2Gi
+    cpu: 500m
+  limits:
+    memory: 8Gi
+    cpu: 2000m
+
+existingSecret: "minio-credentials"
+
+buckets:
+  - name: vision-images-prod
+    policy: none
+    purge: false
+    versioning: true
+  - name: vision-models
+    policy: none
+    purge: false
+
+consoleService:
+  type: ClusterIP
+
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "500m"
+  hosts:
+    - minio.vision.example.com
+  tls:
+    - secretName: minio-prod-tls
+      hosts:
+        - minio.vision.example.com
+
+consoleIngress:
+  enabled: true
+  ingressClassName: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - minio-console.vision.example.com
+  tls:
+    - secretName: minio-console-prod-tls
+      hosts:
+        - minio-console.vision.example.com
+
+metrics:
+  serviceMonitor:
+    enabled: true
+    interval: 15s
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - minio
+        topologyKey: kubernetes.io/hostname
