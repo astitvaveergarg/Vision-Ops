@@ -14,7 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          df -h
+
       uses: actions/checkout@v4
 
     - name: Set up Docker Buildx
