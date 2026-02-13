@@ -1,3 +1,14 @@
+# VisionOps - Helmfile Configuration
+#
+# Prerequisites:
+#   - Local: Minikube cluster running
+#   - Dev/Prod: AWS EKS cluster provisioned via Terraform (see terraform/ directory)
+#
+# Deploy:
+#   helmfile -e local apply   # Local Minikube
+#   helmfile -e dev apply     # Development EKS
+#   helmfile -e prod apply    # Production EKS
+
 environments:
   local:
     values:

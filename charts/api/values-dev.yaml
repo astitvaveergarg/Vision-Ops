@@ -57,17 +57,16 @@ ingress:
   enabled: true
   className: "nginx"
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+    # Private cluster - internal load balancer only
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true" # AWS
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true" # Azure
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
   hosts:
-    - host: api-dev.vision.example.com
+    - host: vision-api.internal # Internal hostname, access via port-forward
       paths:
         - path: /
           pathType: Prefix
-  tls:
-    - secretName: vision-api-dev-tls
-      hosts:
-        - api-dev.vision.example.com
+  # No TLS in dev - use port-forward, no certificates needed
 
 serviceMonitor:
   enabled: true

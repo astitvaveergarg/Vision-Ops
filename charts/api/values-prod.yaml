@@ -64,19 +64,23 @@ ingress:
   enabled: true
   className: "nginx"
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    nginx.ingress.kubernetes.io/rate-limit: "100"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # Private cluster - internal load balancer, accessed via CDN
+    service.beta.kubernetes.io/aws-load-balancer-internal: \"true\" # AWS
+    service.beta.kubernetes.io/azure-load-balancer-internal: \"true\" # Azure
+    nginx.ingress.kubernetes.io/proxy-body-size: \"50m\"
+    nginx.ingress.kubernetes.io/rate-limit: \"100\"
+    nginx.ingress.kubernetes.io/ssl-redirect: \"true\"
+    # Validate custom header from CDN (CloudFront/Front Door)
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      if ($http_x_custom_header != \"$CDN_SECRET\") {
+        return 403;
+      }
   hosts:
-    - host: api.vision.example.com
+    - host: vision-api.internal # Internal hostname, CDN routes to this
       paths:
         - path: /
           pathType: Prefix
-  tls:
-    - secretName: vision-api-prod-tls
-      hosts:
-        - api.vision.example.com
+  # TLS terminated at CDN edge, not at ingress
 
 serviceMonitor:
   enabled: true
