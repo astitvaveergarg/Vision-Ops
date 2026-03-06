@@ -1,0 +1,72 @@
+# VisionOps API - CPU-Only Dockerfile (Local/Minikube)
+# Optimized for size using CPU-only PyTorch and headless OpenCV
+#
+# Size comparison:
+#   Prod (CUDA torch):  ~4.5GB
+#   This (CPU torch):   ~1.2GB
+#
+# Usage:
+#   docker build -t vision-api:local -f docker/Dockerfile.cpu .
+#   minikube image load vision-api:local
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 1: Builder - Install dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+
+# Minimal build dependencies (libglib2.0-0 needed for opencv-headless)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy CPU requirements and install
+COPY api/requirements-cpu.txt .
+RUN pip install --no-cache-dir --user -r requirements-cpu.txt
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 2: Runtime - Minimal image
+# ─────────────────────────────────────────────────────────────────────────────
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Runtime dependencies only (headless opencv needs libglib2.0-0 + libgomp1)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libglib2.0-0 \
+    libgomp1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy installed packages from builder
+COPY --from=builder /root/.local /root/.local
+
+ENV PATH=/root/.local/bin:$PATH \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Copy application code
+COPY api/ .
+
+# Models directory for on-demand downloads
+RUN mkdir -p /app/models && chmod 755 /app/models
+
+# Non-root user for security
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app && \
+    mkdir -p /home/appuser/.local && \
+    cp -r /root/.local/* /home/appuser/.local/ && \
+    chown -R appuser:appuser /home/appuser/.local
+
+USER appuser
+
+ENV PATH=/home/appuser/.local/bin:$PATH
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -8,7 +8,40 @@ auth:
 master:
   persistence:
     enabled: false  # No persistence for local
-  
+
+  # Disable script-based probes (redis-cli hangs in Minikube)
+  livenessProbe:
+    enabled: false
+  readinessProbe:
+    enabled: false
+  startupProbe:
+    enabled: false
+
+  # Use tcpSocket probes instead - just checks if port 6379 is open
+  customLivenessProbe:
+    tcpSocket:
+      port: redis
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 5
+
+  customReadinessProbe:
+    tcpSocket:
+      port: redis
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 5
+
+  customStartupProbe:
+    tcpSocket:
+      port: redis
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 20
+
   resources:
     requests:
       memory: "128Mi"
