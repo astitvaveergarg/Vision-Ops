@@ -5,25 +5,5 @@ metadata:
   labels:
     {{- include "vision-api.labels" . | nindent 4 }}
 data:
-  # Application configuration
-  app-config.yaml: |
-    server:
-      host: "0.0.0.0"
-      port: 8000
-    
-    redis:
-      host: {{ .Values.env | toJson | fromJson | pluck "value" | first }}
-      port: 6379
-      ttl: {{ .Values.env | selectattr "name" "equalto" "CACHE_TTL" | map(attribute="value") | first | default "3600" }}
-    
-    minio:
-      endpoint: "{{ .Values.env | selectattr "name" "equalto" "MINIO_HOST" | map(attribute="value") | first }}:{{ .Values.env | selectattr "name" "equalto" "MINIO_PORT" | map(attribute="value") | first }}"
-      bucket: {{ .Values.env | selectattr "name" "equalto" "MINIO_BUCKET" | map(attribute="value") | first | default "vision-images" }}
-    
-    models:
-      default: {{ .Values.env | selectattr "name" "equalto" "DEFAULT_MODEL_ID" | map(attribute="value") | first | default "yolov8n" }}
-      cache_dir: "/app/models"
-    
-    logging:
-      level: {{ .Values.env | selectattr "name" "equalto" "LOG_LEVEL" | map(attribute="value") | first | default "INFO" }}
-      format: "json"
+  LOG_LEVEL: {{ .Values.logLevel | default "INFO" | quote }}
+  MINIO_BUCKET: {{ .Values.minioBucket | default "vision-images" | quote }}
