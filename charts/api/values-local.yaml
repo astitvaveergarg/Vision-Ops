@@ -5,7 +5,7 @@ replicaCount: 1
 image:
   repository: astitvaveergarg/vision-api
   pullPolicy: IfNotPresent
-  tag: "latest"
+  tag: "cpu-latest"
 
 service:
   type: NodePort
