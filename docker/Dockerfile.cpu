@@ -33,10 +33,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Runtime dependencies only (headless opencv needs libglib2.0-0 + libgomp1)
+# Runtime dependencies only (headless opencv needs libglib2.0-0 + libgomp1 + libxcb1)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libgomp1 \
+    libxcb1 \
     curl \
     && rm -rf /var/lib/apt/lists/*
 

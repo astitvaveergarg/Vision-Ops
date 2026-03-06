@@ -4,8 +4,34 @@ grafana:
   service:
     type: NodePort
     nodePort: 30300  # Access Grafana at localhost:30300
+  # Increase probe delays - Grafana 10.x is slow to start on limited Minikube resources
+  readinessProbe:
+    initialDelaySeconds: 60
+    timeoutSeconds: 10
+    periodSeconds: 10
+    failureThreshold: 6
+  livenessProbe:
+    initialDelaySeconds: 120
+    timeoutSeconds: 10
+    periodSeconds: 30
+    failureThreshold: 5
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "300m"
 
 prometheus:
   service:
     type: NodePort
     nodePort: 30090  # Changed from 30900 (conflict with MinIO)
+
+# Disable node-exporter on Minikube - hostPort 9100 can't bind on Docker driver
+nodeExporter:
+  enabled: false
+
+# Disable kube-state-metrics on Minikube - crashes due to resource constraints
+kube-state-metrics:
+  enabled: false
