@@ -4,13 +4,14 @@ architecture: standalone
 
 auth:
   enabled: true
-  password: "redis-dev-password"
+  existingSecret: "vision-redis-credentials"
+  existingSecretPasswordKey: "password"
 
 master:
   persistence:
     enabled: true
     size: 8Gi
-    storageClass: "gp3"
+    storageClass: "standard"
   resources:
     limits:
       cpu: 500m

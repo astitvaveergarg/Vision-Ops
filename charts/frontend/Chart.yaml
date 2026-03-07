@@ -1,0 +1,15 @@
+apiVersion: v2
+name: vision-frontend
+description: VisionOps Frontend - Nginx serving static UI and proxying API calls to backend
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - frontend
+  - nginx
+  - visionops
+maintainers:
+  - name: VisionOps Team
+home: https://github.com/YOUR_USERNAME/vision
+sources:
+  - https://github.com/YOUR_USERNAME/vision

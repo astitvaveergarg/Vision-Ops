@@ -9,9 +9,7 @@ image:
 
 service:
   type: ClusterIP
-  annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+  annotations: {}
 
 resources:
   limits:
@@ -31,7 +29,7 @@ autoscaling:
 persistence:
   enabled: true
   size: 50Gi
-  storageClass: "gp3"
+  storageClass: "premium-rwo"
 
 env:
   - name: REDIS_HOST
@@ -41,46 +39,27 @@ env:
   - name: REDIS_PASSWORD
     valueFrom:
       secretKeyRef:
-        name: redis-credentials
+        name: vision-redis-credentials
         key: password
   - name: MINIO_ENDPOINT
     value: "minio.vision-infra.svc.cluster.local:9000"
   - name: MINIO_ACCESS_KEY
     valueFrom:
       secretKeyRef:
-        name: minio-credentials
-        key: access-key
+        name: vision-minio-credentials
+        key: rootUser
   - name: MINIO_SECRET_KEY
     valueFrom:
       secretKeyRef:
-        name: minio-credentials
-        key: secret-key
+        name: vision-minio-credentials
+        key: rootPassword
   - name: MINIO_BUCKET
     value: "vision-images-prod"
   - name: LOG_LEVEL
     value: "WARNING"
 
 ingress:
-  enabled: true
-  className: "nginx"
-  annotations:
-    # Private cluster - internal load balancer, accessed via CDN
-    service.beta.kubernetes.io/aws-load-balancer-internal: \"true\" # AWS
-    service.beta.kubernetes.io/azure-load-balancer-internal: \"true\" # Azure
-    nginx.ingress.kubernetes.io/proxy-body-size: \"50m\"
-    nginx.ingress.kubernetes.io/rate-limit: \"100\"
-    nginx.ingress.kubernetes.io/ssl-redirect: \"true\"
-    # Validate custom header from CDN (CloudFront/Front Door)
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      if ($http_x_custom_header != \"$CDN_SECRET\") {
-        return 403;
-      }
-  hosts:
-    - host: vision-api.internal # Internal hostname, CDN routes to this
-      paths:
-        - path: /
-          pathType: Prefix
-  # TLS terminated at CDN edge, not at ingress
+  enabled: false
 
 serviceMonitor:
   enabled: true

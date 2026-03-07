@@ -16,6 +16,12 @@ monitoring:
 api:
   enabled: true  # Phase 3
 
+frontend:
+  enabled: true  # Phase 3
+
+ingress:
+  enabled: false  # Minikube uses its own ingress addon
+
 # Global Settings
 global:
   environment: local

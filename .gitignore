@@ -36,6 +36,8 @@ Thumbs.db
 # Kubernetes
 *.kubeconfig
 secrets/
+k8s/secrets-*.yaml
+!k8s/secrets-*.yaml.example
 
 # Helm
 charts/**/*.tgz

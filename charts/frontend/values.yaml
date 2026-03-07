@@ -1,0 +1,43 @@
+# Default values for vision-frontend
+
+replicaCount: 1
+
+image:
+  repository: astitvaveergarg/vision-frontend
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+nginx:
+  maxBodySize: "100m"
+  readTimeout: "300s"
+
+# Backend API service — frontend nginx proxies /api/ requests here
+backend:
+  service: "vision-api.vision-app.svc.cluster.local"
+  port: 8000

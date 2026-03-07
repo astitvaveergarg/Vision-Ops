@@ -16,6 +16,12 @@ monitoring:
 api:
   enabled: true
 
+frontend:
+  enabled: true
+
+ingress:
+  enabled: true
+
 # Global Settings
 global:
   environment: dev

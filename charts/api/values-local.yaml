@@ -30,12 +30,23 @@ env:
     value: "redis-master.vision-infra.svc.cluster.local"
   - name: REDIS_PORT
     value: "6379"
+  - name: REDIS_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: vision-redis-credentials
+        key: password
   - name: MINIO_ENDPOINT
     value: "minio.vision-infra.svc.cluster.local:9000"
   - name: MINIO_ACCESS_KEY
-    value: "minioadmin"
+    valueFrom:
+      secretKeyRef:
+        name: vision-minio-credentials
+        key: rootUser
   - name: MINIO_SECRET_KEY
-    value: "minioadmin"
+    valueFrom:
+      secretKeyRef:
+        name: vision-minio-credentials
+        key: rootPassword
   - name: MINIO_BUCKET
     value: "vision-images"
   - name: LOG_LEVEL
@@ -48,4 +59,7 @@ serviceMonitor:
   enabled: false
 
 podDisruptionBudget:
+  enabled: false
+
+networkPolicy:
   enabled: false

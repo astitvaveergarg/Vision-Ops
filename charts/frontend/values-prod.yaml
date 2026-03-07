@@ -1,0 +1,33 @@
+# Production environment overrides
+replicaCount: 2
+
+image:
+  pullPolicy: Always
+  tag: "v1.0.0"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    # Validate custom header from CDN — reject direct access
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      if ($http_x_custom_header != "$CDN_SECRET") {
+        return 403;
+      }
+  hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+nginx:
+  maxBodySize: "50m"
+  readTimeout: "300s"
+
+backend:
+  service: "vision-api.vision-app.svc.cluster.local"
+  port: 8000

@@ -6,7 +6,7 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: gp3
+          storageClassName: standard
           resources:
             requests:
               storage: 20Gi
@@ -20,22 +20,17 @@ prometheus:
 
 grafana:
   enabled: true
-  adminPassword: "grafana-dev-password"
+  adminPassword: null  # loaded from secret below
+  admin:
+    existingSecret: "vision-grafana-credentials"
+    userKey: "admin-user"
+    passwordKey: "admin-password"
   persistence:
     enabled: true
-    storageClassName: gp3
+    storageClassName: standard
     size: 5Gi
   ingress:
-    enabled: true
-    ingressClassName: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: "letsencrypt-staging"
-    hosts:
-      - grafana-dev.vision.example.com
-    tls:
-      - secretName: grafana-dev-tls
-        hosts:
-          - grafana-dev.vision.example.com
+    enabled: false
 
 alertmanager:
   enabled: true
@@ -43,7 +38,7 @@ alertmanager:
     storage:
       volumeClaimTemplate:
         spec:
-          storageClassName: gp3
+          storageClassName: standard
           resources:
             requests:
               storage: 5Gi

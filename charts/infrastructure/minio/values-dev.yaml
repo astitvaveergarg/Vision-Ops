@@ -7,7 +7,7 @@ replicas: 1
 persistence:
   enabled: true
   size: 50Gi
-  storageClass: "gp3"
+  storageClass: "standard"
 
 resources:
   requests:
@@ -17,8 +17,7 @@ resources:
     memory: 2Gi
     cpu: 1000m
 
-rootUser: minioadmin
-rootPassword: minio-dev-secret-key
+existingSecret: "vision-minio-credentials"
 
 buckets:
   - name: vision-images-dev
@@ -32,16 +31,7 @@ service:
   type: ClusterIP
 
 ingress:
-  enabled: true
-  ingressClassName: nginx
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-staging"
-  hosts:
-    - minio-dev.vision.example.com
-  tls:
-    - secretName: minio-dev-tls
-      hosts:
-        - minio-dev.vision.example.com
+  enabled: false
 
 metrics:
   serviceMonitor:
