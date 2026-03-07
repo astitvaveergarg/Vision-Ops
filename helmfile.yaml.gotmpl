@@ -2,7 +2,7 @@
 #
 # Prerequisites:
 #   - Local: Minikube cluster running
-#   - Dev/Prod: AWS EKS cluster provisioned via Terraform (see terraform/ directory)
+#   - Dev/Prod: GKE cluster provisioned via Terraform (see terraform/gcp/ directory)
 #
 # Deploy:
 #   helmfile -e local apply   # Local Minikube
@@ -31,8 +31,26 @@ repositories:
     url: https://argoproj.github.io/argo-helm
   - name: minio
     url: https://charts.min.io/
+  - name: ingress-nginx
+    url: https://kubernetes.github.io/ingress-nginx
 
 releases:
+  # Ingress Controller (must be first)
+  - name: ingress-nginx
+    namespace: ingress-nginx
+    chart: ingress-nginx/ingress-nginx
+    version: 4.10.1
+    installed: {{ .Values.ingress.enabled | default false }}
+    values:
+      - controller:
+          replicaCount: 1
+          service:
+            type: LoadBalancer
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+
   # Infrastructure Services
   - name: redis
     namespace: vision-infra
@@ -67,6 +85,19 @@ releases:
     namespace: vision-app
     chart: ./charts/api
     installed: {{ .Values.api.enabled | default false }}
+    needs:
+      - vision-monitoring/prometheus
     values:
       - charts/api/values.yaml
       - charts/api/values-{{ .Environment.Name }}.yaml
+
+  # Frontend (Phase 3)
+  - name: vision-frontend
+    namespace: vision-app
+    chart: ./charts/frontend
+    installed: {{ .Values.frontend.enabled | default false }}
+    needs:
+      - vision-app/vision-api
+    values:
+      - charts/frontend/values.yaml
+      - charts/frontend/values-{{ .Environment.Name }}.yaml

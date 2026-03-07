@@ -4,14 +4,14 @@ architecture: replication
 
 auth:
   enabled: true
-  existingSecret: "redis-credentials"
+  existingSecret: "vision-redis-credentials"
   existingSecretPasswordKey: "password"
 
 master:
   persistence:
     enabled: true
     size: 20Gi
-    storageClass: "gp3"
+    storageClass: "premium-rwo"
   resources:
     limits:
       cpu: 1000m
@@ -27,7 +27,7 @@ replica:
   persistence:
     enabled: true
     size: 20Gi
-    storageClass: "gp3"
+    storageClass: "premium-rwo"
   resources:
     limits:
       cpu: 1000m

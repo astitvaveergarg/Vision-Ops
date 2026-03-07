@@ -1,0 +1,10 @@
+# Local development overrides (Minikube)
+image:
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: false
+
+backend:
+  service: "vision-api.vision-app.svc.cluster.local"
+  port: 8000

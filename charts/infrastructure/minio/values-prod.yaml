@@ -7,7 +7,7 @@ replicas: 4
 persistence:
   enabled: true
   size: 200Gi
-  storageClass: "gp3"
+  storageClass: "premium-rwo"
 
 resources:
   requests:
@@ -17,7 +17,7 @@ resources:
     memory: 8Gi
     cpu: 2000m
 
-existingSecret: "minio-credentials"
+existingSecret: "vision-minio-credentials"
 
 buckets:
   - name: vision-images-prod

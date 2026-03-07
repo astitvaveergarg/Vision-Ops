@@ -95,20 +95,23 @@ env:
     value: "redis-master.vision-infra.svc.cluster.local"
   - name: REDIS_PORT
     value: "6379"
-  - name: MINIO_HOST
-    value: "minio.vision-infra.svc.cluster.local"
-  - name: MINIO_PORT
-    value: "9000"
+  - name: REDIS_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: vision-redis-credentials
+        key: password
+  - name: MINIO_ENDPOINT
+    value: "minio.vision-infra.svc.cluster.local:9000"
   - name: MINIO_ACCESS_KEY
     valueFrom:
       secretKeyRef:
-        name: minio-credentials
-        key: access-key
+        name: vision-minio-credentials
+        key: rootUser
   - name: MINIO_SECRET_KEY
     valueFrom:
       secretKeyRef:
-        name: minio-credentials
-        key: secret-key
+        name: vision-minio-credentials
+        key: rootPassword
   - name: MINIO_BUCKET
     value: "vision-images"
   - name: CACHE_TTL

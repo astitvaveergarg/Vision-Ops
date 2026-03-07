@@ -7,7 +7,7 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: gp3
+          storageClassName: premium-rwo
           resources:
             requests:
               storage: 100Gi
@@ -23,10 +23,14 @@ prometheus:
 grafana:
   enabled: true
   replicas: 2
-  adminPassword: "changeme-use-secret"
+  adminPassword: null
+  admin:
+    existingSecret: "vision-grafana-credentials"
+    userKey: "admin-user"
+    passwordKey: "admin-password"
   persistence:
     enabled: true
-    storageClassName: gp3
+    storageClassName: premium-rwo
     size: 10Gi
   ingress:
     enabled: true
@@ -56,7 +60,7 @@ alertmanager:
     storage:
       volumeClaimTemplate:
         spec:
-          storageClassName: gp3
+          storageClassName: premium-rwo
           resources:
             requests:
               storage: 10Gi

@@ -1,0 +1,23 @@
+# Development environment overrides
+image:
+  pullPolicy: Always
+  tag: "latest"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+  hosts:
+    - host: ""  # Match all — access via LoadBalancer external IP
+      paths:
+        - path: /
+          pathType: Prefix
+
+nginx:
+  maxBodySize: "100m"
+  readTimeout: "300s"
+
+backend:
+  service: "vision-api.vision-app.svc.cluster.local"
+  port: 8000
