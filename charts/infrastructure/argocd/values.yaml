@@ -112,7 +112,7 @@ configs:
     
   secret:
     createSecret: true
-    # Admin password (bcrypt hashed: ArgoAdmin2026!)
+    # Admin password (bcrypt hash — set your own, see README for how to generate)
     argocdServerAdminPassword: "$2b$10$JzOcD5GCrJzAAveZXTMOmeC4cS5OuPX8hHDIt75H.kyFpgll3v8Aq"
     argocdServerAdminPasswordMtime: "2026-01-01T00:00:00Z"
     # Server secret key for session encryption

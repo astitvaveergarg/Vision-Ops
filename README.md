@@ -262,7 +262,10 @@ kubectl port-forward -n argocd svc/argocd-server 8080:80
 
 **Admin (Full Access):**
 - **Username**: `admin`
-- **Password**: `ArgoAdmin2026!`
+- **Password**: retrieve from `argocd-secret` (set via `charts/infrastructure/argocd/values.yaml`)
+  ```powershell
+  kubectl get secret argocd-secret -n argocd -o jsonpath="{.data['admin\.password']}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
+  ```
 
 **Viewer (Read-Only Access):**
 - **Username**: `viewer`
