@@ -21,8 +21,9 @@ frontend:
 
 ingress:
   enabled: true
+  staticIP: "35.194.30.3"  # Reserved static IP - never changes!
 
 # Global Settings
 global:
   environment: dev
-  domain: dev.vision.example.com
+  domain: vision-ops.xyz

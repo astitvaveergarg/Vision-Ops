@@ -7,17 +7,24 @@ ingress:
   enabled: true
   className: "nginx"
   annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
   hosts:
-    - host: ""  # Match all — access via LoadBalancer external IP
+    - host: vision-ops.xyz
       paths:
         - path: /
           pathType: Prefix
+  tls:
+    - secretName: vision-ops-tls
+      hosts:
+        - vision-ops.xyz
 
 nginx:
   maxBodySize: "100m"
   readTimeout: "300s"
 
 backend:
+  url: "https://vision-ops.xyz/api"  # External API URL
   service: "vision-api.vision-app.svc.cluster.local"
   port: 8000

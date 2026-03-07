@@ -1,123 +1,142 @@
-# Quick Reference - GCP GKE Terraform Commands
+# Quick Reference - GCP GKE Commands
 
 ## Prerequisites (One-Time)
 
-# 1. Install gcloud CLI
-# https://cloud.google.com/sdk/docs/install
+```bash
+# Install gcloud CLI: https://cloud.google.com/sdk/docs/install
 
-# 2. Authenticate
+# Authenticate
 gcloud auth login
 gcloud auth application-default login
-
-# 3. Set your project
 gcloud config set project YOUR_PROJECT_ID
 
-# 4. Create GCS backend bucket for Terraform state
+# Create GCS backend bucket
 gcloud storage buckets create gs://vision-terraform-state-gcp \
-  --location=us-central1 \
-  --uniform-bucket-level-access
+  --location=us-central1 --uniform-bucket-level-access
 gcloud storage buckets update gs://vision-terraform-state-gcp --versioning
 
-# 5. Update project_id in environments/dev.tfvars
-# project_id = "your-actual-project-id"
+# Edit project_id in environments/dev.tfvars
+```
 
-## Development Environment
+## Dev Cluster — Provision
 
-# Initialize Terraform
+```bash
 cd terraform/gcp
 terraform init
-
-# Validate
 terraform validate
+terraform plan  -var-file=environments/dev.tfvars
+terraform apply -var-file=environments/dev.tfvars   # ~10-12 min
 
-# Plan
-terraform plan -var-file=environments/dev.tfvars
-
-# Apply (~10-12 minutes)
-terraform apply -var-file=environments/dev.tfvars
-
-# Configure kubectl
+# Connect kubectl
 gcloud container clusters get-credentials vision-dev-gke \
-  --location us-central1-a \
-  --project YOUR_PROJECT_ID
-
-# Verify cluster
+  --location us-central1-a --project YOUR_PROJECT_ID
 kubectl get nodes
-kubectl get pods -A
+```
 
 ## Deploy VisionOps
 
-# Create secrets
+```bash
+# From project root
 kubectl create namespace vision-infra
 kubectl create namespace vision-app
 kubectl create namespace vision-monitoring
+kubectl create namespace ingress-nginx
 
-kubectl create secret generic minio-credentials \
-  --from-literal=access-key=minioadmin123 \
-  --from-literal=secret-key=minioadmin123 \
-  -n vision-infra
+# Create secrets (both namespaces)
+cp k8s/secrets-dev.yaml.example k8s/secrets-dev.yaml
+# Edit k8s/secrets-dev.yaml with real credentials
+kubectl apply -f k8s/secrets-dev.yaml
 
-kubectl create secret generic redis-credentials \
-  --from-literal=password=redis123 \
-  -n vision-infra
-
-# Deploy with Helmfile (from project root)
-cd ../..
+# Deploy 6 Helm releases
 helmfile -e dev sync
 
-# Watch pods come up
+# Watch pods (model download ~2-5 min)
 kubectl get pods -A -w
 
-# Access the API (no public IP needed — use port-forward)
-kubectl port-forward -n vision-app svc/vision-api 8000:8000
-curl http://localhost:8000/health
+# Get external IP
+kubectl get svc -n ingress-nginx ingress-nginx-controller
 
-# Access Grafana
-kubectl port-forward -n vision-monitoring svc/prometheus-grafana 3000:80
-# Open http://localhost:3000 (admin/admin)
+# Test
+EXTERNAL_IP=$(kubectl get svc -n ingress-nginx ingress-nginx-controller \
+  -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+curl http://$EXTERNAL_IP/api/health
+echo "Swagger UI: http://$EXTERNAL_IP/api/docs"
+```
 
-## Destroy (IMPORTANT: do this to stop costs)
-cd terraform/gcp
+## Monitoring
+
+```bash
+# Grafana
+kubectl port-forward svc/prometheus-grafana 3000:80 -n vision-monitoring
+# http://localhost:3000  — credentials from vision-grafana-credentials secret
+
+# Prometheus
+kubectl port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090 -n vision-monitoring
+# http://localhost:9090
+```
+
+## Update Application (after CI push)
+
+```bash
+kubectl rollout restart deployment/vision-api      -n vision-app
+kubectl rollout restart deployment/vision-frontend -n vision-app
+kubectl rollout status  deployment/vision-api      -n vision-app
+kubectl rollout status  deployment/vision-frontend -n vision-app
+```
+
+## Scale / Debug
+
+```bash
+# Pod status
+kubectl get pods -n vision-app
+kubectl describe pod <pod-name> -n vision-app
+kubectl logs -f deployment/vision-api -n vision-app
+
+# Resource usage
+kubectl top nodes
+kubectl top pods -n vision-app
+
+# Shell into API pod
+kubectl exec -it deployment/vision-api -n vision-app -- /bin/bash
+
+# Node labels / pool
+kubectl get nodes -L role,cloud.google.com/gke-nodepool
+
+# HPA (prod)
+kubectl get hpa -n vision-app -w
+```
+
+## Destroy (STOP COSTS)
+
+```bash
+# Always destroy workloads first
 helmfile -e dev destroy
-terraform destroy -var-file=environments/dev.tfvars
 
-## Production Environment
+# Then destroy GKE
+cd terraform/gcp
+terraform destroy -var-file=environments/dev.tfvars   # ~5-8 min
+```
 
-# Plan
-terraform plan -var-file=environments/prod.tfvars
+## Prod Cluster
 
-# Apply (~15-20 minutes)
-terraform apply -var-file=environments/prod.tfvars
+```bash
+cd terraform/gcp
+terraform plan  -var-file=environments/prod.tfvars
+terraform apply -var-file=environments/prod.tfvars   # ~15-20 min
 
-# Configure kubectl
 gcloud container clusters get-credentials vision-prod-gke \
-  --location us-central1 \
-  --project YOUR_PROJECT_ID
+  --location us-central1 --project YOUR_PROJECT_ID
 
-# Deploy
-cd ../..
 helmfile -e prod apply
 
 # Destroy prod
 terraform destroy -var-file=environments/prod.tfvars
+```
 
-## Useful Commands
+## Costs
 
-# View Terraform outputs
-terraform output configure_kubectl
-terraform output cluster_name
-
-# GKE cluster info
-gcloud container clusters list
-gcloud container clusters describe vision-dev-gke --location us-central1-a
-
-# Check node pool status
-kubectl get nodes -L role,workload
-
-# Watch HPA scaling
-kubectl get hpa -n vision-app -w
-
-# Cost estimate (current usage)
-# Dev (1 e2-standard-4 node running): ~$0.16/hr
-# Prod (2 general + 2 ml nodes running): ~$0.65/hr
-# Remember: GKE zonal control plane is FREE
+```
+Dev  (2x e2-standard-4, zonal) : ~$0.27/hr  ~$6.50/day
+Prod (4x e2-standard-4, regional): ~$0.54/hr ~$13/day
+GKE zonal control plane: FREE
+```
