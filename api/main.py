@@ -72,7 +72,8 @@ app = FastAPI(
     title="VisionOps API",
     description="Real-time object detection using YOLO",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    root_path=settings.ROOT_PATH
 )
 
 # CORS middleware

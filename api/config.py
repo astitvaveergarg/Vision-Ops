@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     
     # Cache Settings
     CACHE_TTL: int = 3600  # 1 hour
+
+    # API root path (set to /api when running behind nginx proxy)
+    ROOT_PATH: str = ""
     
     class Config:
         env_file = ".env"

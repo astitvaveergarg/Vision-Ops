@@ -120,6 +120,8 @@ env:
     value: "yolov8n"
   - name: LOG_LEVEL
     value: "INFO"
+  - name: ROOT_PATH
+    value: "/api"
 
 # Persistent volume for model cache
 persistence:
