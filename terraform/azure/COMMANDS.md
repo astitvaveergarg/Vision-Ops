@@ -1,92 +1,79 @@
-# Quick Reference - Terraform AKS Commands
+# Quick Reference - Azure AKS Commands
 
-## Initial Setup (One-Time)
+> ⏳ IaC complete. Cluster not yet provisioned. Active deployment is GCP GKE.
 
-# 1. Login to Azure
+## Prerequisites
+
+```bash
 az login
 az account set --subscription <subscription-id>
+az account show   # verify
 
-# 2. Create storage account for backend
+# Update environments/dev.tfvars with your subscription_id
+```
+
+## Create State Backend (One-Time)
+
+```bash
 az group create --name vision-terraform-state --location eastus
-az storage account create --name visionterraformstate --resource-group vision-terraform-state --location eastus --sku Standard_LRS
+az storage account create \
+  --name visionterraformstate \
+  --resource-group vision-terraform-state \
+  --location eastus --sku Standard_LRS
 az storage container create --name tfstate --account-name visionterraformstate
+```
 
-# 3. Initialize Terraform
-cd terraform-aks
+## Dev Cluster
+
+```bash
+cd terraform/azure
 terraform init
-terraform validate
+terraform plan  -var-file=environments/dev.tfvars
+terraform apply -var-file=environments/dev.tfvars   # ~10-15 min
 
-## Development Environment
-
-# Plan
-terraform plan -var-file=environments/dev.tfvars
-
-# Apply
-terraform apply -var-file=environments/dev.tfvars
-
-# Configure kubectl
+# kubectl (private cluster — needs Azure Bastion or VPN)
 az aks get-credentials --resource-group vision-dev-rg --name vision-dev-aks
-
-# Destroy
-terraform destroy -var-file=environments/dev.tfvars
-
-## Production Environment
-
-# Plan
-terraform plan -var-file=environments/prod.tfvars
-
-# Apply
-terraform apply -var-file=environments/prod.tfvars
-
-# Configure kubectl
-az aks get-credentials --resource-group vision-prod-rg --name vision-prod-aks
-
-# Destroy
-terraform destroy -var-file=environments/prod.tfvars
-
-## Post-Deployment Setup
-
-# Install NGINX Ingress Controller
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm repo update
-helm install nginx-ingress ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz
-
-# Install cert-manager
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
-
-# Deploy VisionOps
-cd ..
-helmfile -e dev apply
-
-## Useful Commands
-
-# Show outputs
-terraform output
-
-# Show specific output
-terraform output cluster_name
-terraform output cluster_fqdn
-
-# Format code
-terraform fmt -recursive
-
-# View state
-terraform show
-
-# Refresh state
-terraform refresh -var-file=environments/dev.tfvars
-
-# Check cluster access
 kubectl get nodes
-kubectl cluster-info
-kubectl get pods -A
+```
 
-# View AKS logs
-az aks show --resource-group vision-dev-rg --name vision-dev-aks
-az aks get-upgrades --resource-group vision-dev-rg --name vision-dev-aks
+## Deploy VisionOps
+
+```bash
+kubectl apply -f k8s/secrets-dev.yaml
+helmfile -e dev sync
+kubectl get pods -A -w
+```
+
+## Destroy
+
+```bash
+helmfile -e dev destroy
+cd terraform/azure
+terraform destroy -var-file=environments/dev.tfvars
+```
+
+## Prod Cluster
+
+```bash
+terraform apply  -var-file=environments/prod.tfvars
+az aks get-credentials --resource-group vision-prod-rg --name vision-prod-aks
+helmfile -e prod apply
+terraform destroy -var-file=environments/prod.tfvars
+```
+
+## Useful Azure Commands
+
+```bash
+# List AKS clusters
+az aks list --output table
 
 # Scale node pool
-az aks nodepool scale --resource-group vision-dev-rg --cluster-name vision-dev-aks --name ml --node-count 3
+az aks scale --resource-group vision-dev-rg \
+  --name vision-dev-aks --node-count 3 --nodepool-name general
 
-# Upgrade cluster
-az aks upgrade --resource-group vision-dev-rg --name vision-dev-aks --kubernetes-version 1.29
+# Get Front Door hostname
+terraform output frontdoor_endpoint_hostname
+
+# Check node pool status
+kubectl get nodes -L beta.kubernetes.io/instance-type,topology.kubernetes.io/zone
+```

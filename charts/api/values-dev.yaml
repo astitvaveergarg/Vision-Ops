@@ -56,17 +56,41 @@ env:
     value: "vision-images-dev"
   - name: LOG_LEVEL
     value: "INFO"
+  - name: ROOT_PATH
+    value: "/api"
 
 ingress:
-  enabled: false
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  hosts:
+    - host: vision-ops.xyz
+      paths:
+        - path: /api(/|$)(.*)
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: vision-ops-tls
+      hosts:
+        - vision-ops.xyz
 
 serviceMonitor:
   enabled: true
   interval: 30s
 
 podDisruptionBudget:
-  enabled: true
-  minAvailable: 1
+  enabled: false  # Disabled: incompatible with 1 replica + scale-to-zero
 
 networkPolicy:
   enabled: false
+
+# Node placement — schedule on ML node pool
+nodeSelector:
+  role: ml  # Matches terraform label in ml_node_pool
+
+# Preferred (not required) anti-affinity — works with scale-to-zero
+affinity: {}
+
+tolerations: []

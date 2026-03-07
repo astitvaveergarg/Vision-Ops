@@ -155,6 +155,9 @@ resource "google_container_cluster" "gke" {
     }
   }
 
+  # Disable deletion protection for easier cleanup in dev
+  deletion_protection = false
+
   depends_on = [
     google_project_service.required_apis,
     google_compute_subnetwork.gke,

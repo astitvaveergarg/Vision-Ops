@@ -46,6 +46,11 @@ releases:
           replicaCount: 1
           service:
             type: LoadBalancer
+            {{- if .Values.ingress.staticIP }}
+            loadBalancerIP: {{ .Values.ingress.staticIP }}
+            annotations:
+              cloud.google.com/load-balancer-type: "External"
+            {{- end }}
           resources:
             requests:
               cpu: 100m

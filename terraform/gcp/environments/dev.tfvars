@@ -26,28 +26,28 @@ master_authorized_networks = [
   }
 ]
 
-# General node pool — runs Redis, MinIO, Prometheus, Grafana
-# e2-standard-4: 4 vCPU, 16GB RAM = $0.134/hr
+# General node pool — runs Redis, MinIO, Prometheus, Grafana, system pods
+# e2-medium: 2 vCPU, 4GB RAM = $0.034/hr (~$24/month) — always-on for system
 general_node_pool = {
-  machine_type = "e2-standard-4"
+  machine_type = "e2-medium"
   min_count    = 1
-  max_count    = 2
-  disk_size_gb = 100
-  use_spot     = false   # Spot saves ~60-91%, but nodes can be preempted
+  max_count    = 1
+  disk_size_gb = 50
+  use_spot     = false   # Keep stable for system components
   labels       = {}
 }
 
 # ML node pool — runs vision-api (YOLO inference)
-# e2-standard-4: 4 vCPU, 16GB RAM = $0.134/hr
-# Combined with infra on same machine type to keep dev costs low
+# e2-standard-4: 4 vCPU, 16GB RAM = $0.134/hr (~$97/month when running)
+# AUTOSCALES TO ZERO: Only boots when traffic arrives (30-60s startup)
 ml_node_pool = {
   machine_type = "e2-standard-4"
-  min_count    = 1
-  max_count    = 3
+  min_count    = 0   # 🎯 Scale to zero when idle
+  max_count    = 3   # Scale up when traffic arrives
   disk_size_gb = 100
   use_spot     = false
   labels       = {}
-  taints       = []   # No taints in dev — simpler scheduling
+  taints       = []   # No taints — keeps scheduling simple
 }
 
 # Cloud Armor disabled in dev (no public LB needed, use port-forward)

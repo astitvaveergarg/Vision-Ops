@@ -2,21 +2,21 @@
 
 prometheus:
   prometheusSpec:
-    retention: 7d
+    retention: 2d  # Reduced from 7d → saves storage
     storageSpec:
       volumeClaimTemplate:
         spec:
           storageClassName: standard
           resources:
             requests:
-              storage: 20Gi
+              storage: 5Gi  # Reduced from 20Gi
     resources:
       requests:
-        cpu: 200m
-        memory: 512Mi
+        cpu: 100m  # Reduced from 200m
+        memory: 256Mi  # Reduced from 512Mi
       limits:
-        cpu: 1000m
-        memory: 2Gi
+        cpu: 500m
+        memory: 1Gi
 
 grafana:
   enabled: true
@@ -30,18 +30,26 @@ grafana:
     storageClassName: standard
     size: 5Gi
   ingress:
-    enabled: false
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - vision-ops.xyz
+    path: /grafana
+    pathType: Prefix
+    tls:
+      - secretName: vision-ops-tls
+        hosts:
+          - vision-ops.xyz
+  env:
+    GF_SERVER_DOMAIN: vision-ops.xyz
+    GF_SERVER_ROOT_URL: "https://vision-ops.xyz/grafana/"
+    GF_SERVER_SERVE_FROM_SUB_PATH: "true"
 
 alertmanager:
-  enabled: true
-  alertmanagerSpec:
-    storage:
-      volumeClaimTemplate:
-        spec:
-          storageClassName: standard
-          resources:
-            requests:
-              storage: 5Gi
+  enabled: false  # Disabled for demos — not needed
 
 nodeExporter:
   enabled: true
