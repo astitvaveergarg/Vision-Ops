@@ -55,6 +55,10 @@ releases:
             requests:
               cpu: 100m
               memory: 128Mi
+    hooks:
+      - events: ["postsync"]
+        command: "kubectl"
+        args: ["apply", "-f", "k8s/letsencrypt-issuer.yaml"]
 
   # Infrastructure Services
   - name: redis
@@ -84,6 +88,29 @@ releases:
     values:
       - charts/monitoring/prometheus/values.yaml
       - charts/monitoring/prometheus/values-{{ .Environment.Name }}.yaml
+
+  # ArgoCD - GitOps Continuous Delivery
+  - name: argocd
+    namespace: argocd
+    chart: argo/argo-cd
+    version: 7.7.11
+    installed: {{ .Values.argocd.enabled | default false }}
+    values:
+      - charts/infrastructure/argocd/values.yaml
+      - charts/infrastructure/argocd/values-{{ .Environment.Name }}.yaml
+    hooks:
+      - events: ["postsync"]
+        command: "kubectl"
+        args: ["wait", "deployment/argocd-server", "-n", "argocd", "--for=condition=available", "--timeout=300s"]
+      - events: ["postsync"]
+        command: "kubectl"
+        args: ["apply", "-f", "k8s/argocd-ingress.yaml"]
+      - events: ["postsync"]
+        command: "kubectl"
+        args: ["apply", "-f", "k8s/argocd-repos.yaml"]
+      - events: ["postsync"]
+        command: "kubectl"
+        args: ["apply", "-f", "k8s/argocd-apps/"]
 
   # Application (Phase 3)
   - name: vision-api

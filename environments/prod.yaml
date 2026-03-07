@@ -13,6 +13,9 @@ postgres:
 monitoring:
   enabled: true
 
+argocd:
+  enabled: true
+
 api:
   enabled: true
 

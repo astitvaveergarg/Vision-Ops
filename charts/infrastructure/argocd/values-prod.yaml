@@ -1,0 +1,92 @@
+# ArgoCD Production Configuration
+
+global:
+  domain: vision-ops.xyz
+
+server:
+  replicas: 2
+  
+  extraArgs:
+    - --insecure
+    - --basehref=/argocd
+    - --rootpath=/argocd
+  
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    hosts:
+      - vision-ops.xyz
+    paths:
+      - /argocd(/|$)(.*)
+    pathType: ImplementationSpecific
+    tls:
+      - secretName: vision-ops-tls
+        hosts:
+          - vision-ops.xyz
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+
+controller:
+  replicas: 2
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+    requests:
+      cpu: 1000m
+      memory: 1Gi
+
+repoServer:
+  replicas: 2
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+
+applicationSet:
+  enabled: true
+  replicas: 2
+
+notifications:
+  enabled: true
+
+redis-ha:
+  enabled: true
+
+redis:
+  enabled: false
+
+configs:
+  params:
+    server.insecure: true
+    server.basehref: /argocd
+    server.rootpath: /argocd
+  
+  cm:
+    url: https://vision-ops.xyz/argocd

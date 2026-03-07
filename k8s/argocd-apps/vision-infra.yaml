@@ -1,0 +1,92 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vision-infra-redis
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: registry-1.docker.io/bitnamicharts
+      chart: redis
+      targetRevision: 25.2.0
+      helm:
+        releaseName: redis
+        valueFiles:
+          - $values/charts/infrastructure/redis/values.yaml
+          - $values/charts/infrastructure/redis/values-dev.yaml
+    - repoURL: https://github.com/astitvaveergarg/Vision-Ops.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vision-infra
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vision-infra-minio
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://charts.min.io/
+      chart: minio
+      targetRevision: 5.4.0
+      helm:
+        releaseName: minio
+        valueFiles:
+          - $values/charts/infrastructure/minio/values.yaml
+          - $values/charts/infrastructure/minio/values-dev.yaml
+    - repoURL: https://github.com/astitvaveergarg/Vision-Ops.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vision-infra
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vision-monitoring
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: 56.6.2
+      helm:
+        releaseName: prometheus
+        valueFiles:
+          - $values/charts/monitoring/prometheus/values.yaml
+          - $values/charts/monitoring/prometheus/values-dev.yaml
+    - repoURL: https://github.com/astitvaveergarg/Vision-Ops.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vision-monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

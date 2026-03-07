@@ -1,0 +1,31 @@
+# ArgoCD Local (Minikube) Configuration
+
+global:
+  domain: argocd.local
+
+server:
+  replicas: 1
+  
+  ingress:
+    enabled: false
+  
+  service:
+    type: NodePort
+    nodePortHttp: 30080
+    nodePortHttps: 30443
+
+controller:
+  replicas: 1
+
+repoServer:
+  replicas: 1
+
+applicationSet:
+  replicas: 1
+
+redis:
+  enabled: true
+
+configs:
+  cm:
+    url: http://localhost:30080/argocd

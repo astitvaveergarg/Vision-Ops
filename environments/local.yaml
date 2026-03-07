@@ -13,6 +13,9 @@ postgres:
 monitoring:
   enabled: true
 
+argocd:
+  enabled: false  # Optional for local
+
 api:
   enabled: true  # Phase 3
 
