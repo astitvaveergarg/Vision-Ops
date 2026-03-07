@@ -1,0 +1,58 @@
+# ArgoCD Dev (GKE) Configuration
+
+global:
+  domain: argocd.vision-ops.xyz
+
+server:
+  replicas: 1
+  
+  extraArgs:
+    - --insecure
+  
+  ingress:
+    enabled: false
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+controller:
+  replicas: 1
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+
+repoServer:
+  replicas: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+applicationSet:
+  enabled: true
+  replicas: 1
+
+notifications:
+  enabled: false
+
+redis:
+  enabled: true
+
+configs:
+  params:
+    server.insecure: "true"
+  
+  cm:
+    url: https://vision-ops.xyz/argocd

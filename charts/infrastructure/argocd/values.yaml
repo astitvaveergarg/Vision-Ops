@@ -1,0 +1,122 @@
+# ArgoCD Base Configuration
+# Continuous Delivery for Kubernetes
+
+global:
+  domain: argocd.local
+
+# Controller
+controller:
+  replicas: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+# Server
+server:
+  replicas: 1
+  
+  extraArgs:
+    - --insecure
+  
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  
+  # Ingress configuration
+  ingress:
+    enabled: false
+    ingressClassName: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    hosts: []
+    paths:
+      - /argocd
+    pathType: Prefix
+    tls: []
+
+# Repo Server
+repoServer:
+  replicas: 1
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# ApplicationSet Controller
+applicationSet:
+  enabled: true
+  replicas: 1
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Notifications Controller
+notifications:
+  enabled: false
+
+# Dex (OAuth)
+dex:
+  enabled: false
+
+# Redis
+redis:
+  enabled: true
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 64Mi
+
+# Configs
+configs:
+  params:
+    server.insecure: "true"
+  
+  cm:
+    url: https://argocd.vision-ops.xyz
+    
+    # Additional user accounts
+    accounts.viewer: apiKey, login
+    
+  rbac:
+    # Read-only policy for viewer account
+    policy.default: role:readonly
+    policy.csv: |
+      p, role:viewer, applications, get, */*, allow
+      p, role:viewer, certificates, get, *, allow
+      p, role:viewer, clusters, get, *, allow
+      p, role:viewer, repositories, get, *, allow
+      p, role:viewer, projects, get, *, allow
+      p, role:viewer, accounts, get, *, allow
+      p, role:viewer, gpgkeys, get, *, allow
+      g, viewer, role:viewer
+    
+  secret:
+    createSecret: true
+    # Admin password (bcrypt hashed: ArgoAdmin2026!)
+    argocdServerAdminPassword: "$2b$10$JzOcD5GCrJzAAveZXTMOmeC4cS5OuPX8hHDIt75H.kyFpgll3v8Aq"
+    argocdServerAdminPasswordMtime: "2026-01-01T00:00:00Z"
+    # Server secret key for session encryption
+    extra:
+      server.secretkey: "MzI1NGZkZWNjZTgzZjEzMTUxYTUwNzI1NWQxNmUwMzgzODFjN2QwMThmNGMyYWY1MzExZWUyMTllYzIyOTY0NA=="
+      # Viewer account password (bcrypt hashed: vision-readonly-2026)
+      accounts.viewer.password: "$2b$10$/ZxMF8d.Rg5VM8XYhqSvlu2St11VraQc4MZ8t/ajA38ZmorstXCMi"

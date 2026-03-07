@@ -175,11 +175,24 @@ vision/
 - 💚 **Health Check**: https://vision-ops.xyz/api/health
 - 📊 **Metrics**: https://vision-ops.xyz/api/metrics
 - 📈 **Grafana**: https://vision-ops.xyz/grafana/
+- 🚀 **ArgoCD**: https://argocd.vision-ops.xyz/
 
-**Demo Access (Grafana):**
+**Demo Access:**
+
+**Grafana (Monitoring):**
 - **Username**: `vision-ops-viewers`
 - **Password**: `vision-ops-2026`
-- *(Read-only viewer access for demos)*
+- *(Read-only viewer access)*
+
+**ArgoCD (GitOps):**
+- **Username**: `admin`
+- **Password**: *(See "Accessing ArgoCD" section below for retrieve command)*
+- *(Admin access for GitOps management)*
+
+**ArgoCD (Read-Only Viewer):**
+- **Username**: `viewer`
+- **Password**: `vision-readonly-2026`
+- *(Read-only access for monitoring deployments)*
 
 ---
 
@@ -233,7 +246,67 @@ docker-compose up -d
 
 ---
 
-## 📊 Monitoring
+## � GitOps with ArgoCD
+
+### Accessing ArgoCD
+
+**Live:** https://argocd.vision-ops.xyz/
+
+**Local Port Forward:**
+```bash
+kubectl port-forward -n argocd svc/argocd-server 8080:80
+# http://localhost:8080
+```
+
+**Default Credentials:**
+
+**Admin (Full Access):**
+- **Username**: `admin`
+- **Password**: `ArgoAdmin2026!`
+
+**Viewer (Read-Only Access):**
+- **Username**: `viewer`
+- **Password**: `vision-readonly-2026`
+
+> 💡 **Security Best Practice**: Change the admin password via UI after first login (User Info → Update Password).
+
+### What ArgoCD Does
+
+ArgoCD enables **GitOps** - declarative continuous delivery for Kubernetes:
+- Automatically syncs cluster state with Git repository
+- Provides visual UI for deployment status
+- Automated rollbacks and health checks
+- Multi-cluster management capabilities
+
+### Managed Applications
+
+VisionOps is now managed by ArgoCD with 5 applications:
+
+```bash
+# View all applications
+kubectl get applications -n argocd
+
+# Create applications from Git
+kubectl apply -f k8s/argocd-apps/
+```
+
+**Applications:**
+1. **vision-api** - FastAPI backend (charts/api)
+2. **vision-frontend** - Nginx frontend (charts/frontend)
+3. **vision-infra-redis** - Redis cache (charts/infrastructure/redis)
+4. **vision-infra-minio** - MinIO storage (charts/infrastructure/minio)
+5. **vision-monitoring** - Prometheus + Grafana (charts/monitoring/prometheus)
+
+**Features:**
+- ✅ Auto-sync enabled (Git → Cluster)
+- ✅ Self-heal enabled (auto-recover from drift)
+- ✅ Prune enabled (removes deleted resources)
+- 🎯 Source: GitHub repository `astitvaveergarg/Vision-Ops`
+- 📂 All apps use `values-dev.yaml` for environment config
+
+---
+
+## �📊 Monitoring
 
 ### Accessing Grafana
 
