@@ -11,7 +11,7 @@ import json
 import logging
 from typing import Optional, Dict, Any
 
-from config import settings
+from api.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +35,9 @@ class CacheService:
             self.client.ping()
             logger.info(f"Connected to Redis at {settings.REDIS_HOST}:{settings.REDIS_PORT}")
         except redis.ConnectionError as e:
-            logger.error(f"Failed to connect to Redis: {e}")
-            raise
+            # During local smoke tests Redis may not be running; degrade gracefully.
+            logger.warning(f"Redis unavailable, cache disabled: {e}")
+            self.client = None
     
     def get_cached_result(self, image_hash: str) -> Optional[Dict[str, Any]]:
         """
@@ -48,6 +49,8 @@ class CacheService:
         Returns:
             Cached result dict or None if not found
         """
+        if not self.client:
+            return None
         try:
             key = f"detection:{image_hash}"
             cached = self.client.get(key)
@@ -80,6 +83,8 @@ class CacheService:
         Returns:
             True if successful, False otherwise
         """
+        if not self.client:
+            return False
         try:
             key = f"detection:{image_hash}"
             ttl = ttl or settings.CACHE_TTL
@@ -107,6 +112,8 @@ class CacheService:
         Returns:
             True if deleted, False if not found
         """
+        if not self.client:
+            return False
         try:
             key = f"detection:{image_hash}"
             deleted = self.client.delete(key)
@@ -122,6 +129,8 @@ class CacheService:
         Returns:
             True if healthy, False otherwise
         """
+        if not self.client:
+            return False
         try:
             return self.client.ping()
         except Exception:
@@ -134,6 +143,8 @@ class CacheService:
         Returns:
             Dict with cache stats
         """
+        if not self.client:
+            return {}
         try:
             info = self.client.info()
             return {

@@ -55,7 +55,7 @@ kubectl create namespace ingress-nginx
 
 # Copy the example secret template and fill in your values
 cp k8s/secrets-dev.yaml.example k8s/secrets-dev.yaml
-# Edit k8s/secrets-dev.yaml — set actual passwords
+# Edit k8s/secrets-dev.yaml — set actual passwords (including Postgres credentials)
 kubectl apply -f k8s/secrets-dev.yaml
 
 # Verify secrets exist in both namespaces
@@ -67,8 +67,14 @@ kubectl get secrets -n vision-app
 - `vision-redis-credentials` in `vision-infra` and `vision-app` (key: `password`)
 - `vision-minio-credentials` in `vision-infra` and `vision-app` (keys: `rootUser`, `rootPassword`)
 - `vision-grafana-credentials` in `vision-monitoring` (keys: `admin-user`, `admin-password`)
+- `vision-postgres-credentials` in `vision-app` (keys: `username`, `password`)  
+  *this is used by the API once the Postgres release is enabled*
 
 ### Step 4: Deploy all 6 releases
+
+# (Optional) Once Postgres is running you can apply database migrations from the API package:
+# cd api && alembic upgrade head  # requires env vars or .env pointing at the cluster database
+
 
 ```bash
 cd /path/to/vision
@@ -140,8 +146,8 @@ kubectl wait --for=condition=ready pod --all -n vision-infra --timeout=5m
 
 # 2. Port-forward services to localhost
 kubectl port-forward -n vision-infra svc/redis-master 6379:6379 &
-kubectl port-forward -n vision-infra svc/minio 9000:9000 &
-
+kubectl port-forward -n vision-infra svc/minio 9000:9000 &# (optional) if you want to exercise the database you can port-forward postgres:
+# kubectl port-forward -n vision-infra svc/postgres 5432:5432 &
 # 3. Start application
 docker-compose up -d
 
@@ -193,6 +199,11 @@ REDIS_PASSWORD=your_redis_password
 MINIO_ENDPOINT=localhost:9000
 MINIO_ACCESS_KEY=your_minio_user
 MINIO_SECRET_KEY=your_minio_password
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=visiondb
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_postgres_password
 ROOT_PATH=
 LOG_LEVEL=DEBUG
 EOF

@@ -14,7 +14,7 @@ from datetime import datetime
 from minio import Minio
 from minio.error import S3Error
 
-from config import settings
+from api.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -32,16 +32,18 @@ class StorageService:
                 secure=settings.MINIO_SECURE
             )
             
-            # Ensure bucket exists
+            # Ensure bucket exists (will no-op if client is None)
             self._ensure_bucket()
             
             logger.info(f"Connected to MinIO at {settings.MINIO_ENDPOINT}")
         except Exception as e:
-            logger.error(f"Failed to initialize MinIO client: {e}")
-            raise
+            logger.warning(f"MinIO unavailable, storage disabled: {e}")
+            self.client = None
     
     def _ensure_bucket(self):
         """Create bucket if it doesn't exist"""
+        if not self.client:
+            return
         try:
             if not self.client.bucket_exists(settings.MINIO_BUCKET):
                 self.client.make_bucket(settings.MINIO_BUCKET)
@@ -50,7 +52,7 @@ class StorageService:
                 logger.info(f"Bucket exists: {settings.MINIO_BUCKET}")
         except S3Error as e:
             logger.error(f"Failed to check/create bucket: {e}")
-            raise
+            # do not raise; continue without storage
     
     def upload_image(
         self,
@@ -69,6 +71,8 @@ class StorageService:
         Returns:
             Object URL or None if failed
         """
+        if not self.client:
+            return None
         try:
             # Add timestamp to filename to avoid collisions
             timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
@@ -102,6 +106,8 @@ class StorageService:
         Returns:
             Image bytes or None if failed
         """
+        if not self.client:
+            return None
         try:
             response = self.client.get_object(
                 bucket_name=settings.MINIO_BUCKET,
@@ -128,6 +134,8 @@ class StorageService:
         Returns:
             True if successful, False otherwise
         """
+        if not self.client:
+            return False
         try:
             self.client.remove_object(
                 bucket_name=settings.MINIO_BUCKET,
@@ -147,6 +155,8 @@ class StorageService:
         Returns:
             True if healthy, False otherwise
         """
+        if not self.client:
+            return False
         try:
             # Check if bucket exists
             return self.client.bucket_exists(settings.MINIO_BUCKET)
@@ -160,6 +170,8 @@ class StorageService:
         Returns:
             Dict with storage stats
         """
+        if not self.client:
+            return {}
         try:
             objects = self.client.list_objects(settings.MINIO_BUCKET)
             count = sum(1 for _ in objects)

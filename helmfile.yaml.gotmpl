@@ -79,6 +79,16 @@ releases:
       - charts/infrastructure/minio/values.yaml
       - charts/infrastructure/minio/values-{{ .Environment.Name }}.yaml
 
+  # PostgreSQL database for user models & metadata (Phase 1)
+  - name: postgres
+    namespace: vision-infra
+    chart: bitnami/postgresql
+    version: 15.2.0
+    installed: {{ .Values.postgres.enabled | default false }}
+    values:
+      - charts/infrastructure/postgres/values.yaml
+      - charts/infrastructure/postgres/values-{{ .Environment.Name }}.yaml
+
   # Monitoring Stack
   - name: prometheus
     namespace: vision-monitoring

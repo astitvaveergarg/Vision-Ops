@@ -8,7 +8,7 @@ minio:
   enabled: true
 
 postgres:
-  enabled: false
+  enabled: true
 
 monitoring:
   enabled: true

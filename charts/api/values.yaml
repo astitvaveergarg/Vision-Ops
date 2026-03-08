@@ -122,6 +122,23 @@ env:
     value: "INFO"
   - name: ROOT_PATH
     value: "/api"
+  # PostgreSQL connection (Phase 1)
+  - name: POSTGRES_HOST
+    value: "postgresql.vision-infra.svc.cluster.local"
+  - name: POSTGRES_PORT
+    value: "5432"
+  - name: POSTGRES_DB
+    value: "visiondb"
+  - name: POSTGRES_USER
+    valueFrom:
+      secretKeyRef:
+        name: vision-postgres-credentials
+        key: username
+  - name: POSTGRES_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: vision-postgres-credentials
+        key: password
 
 # Persistent volume for model cache
 persistence:

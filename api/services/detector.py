@@ -13,8 +13,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from config import settings
-from services.model_manager import ModelManager
+from api.config import settings
+from api.services.model_manager import ModelManager
 
 logger = logging.getLogger(__name__)
 

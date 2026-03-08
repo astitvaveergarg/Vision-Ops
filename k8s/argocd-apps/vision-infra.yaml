@@ -81,9 +81,31 @@ spec:
     - repoURL: https://github.com/astitvaveergarg/Vision-Ops.git
       targetRevision: HEAD
       ref: values
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vision-infra-postgres
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://charts.bitnami.com/bitnami
+      chart: postgresql
+      targetRevision: 15.2.0
+      helm:
+        releaseName: postgres
+        valueFiles:
+          - $values/charts/infrastructure/postgres/values.yaml
+          - $values/charts/infrastructure/postgres/values-dev.yaml
+    - repoURL: https://github.com/astitvaveergarg/Vision-Ops.git
+      targetRevision: HEAD
+      ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: vision-monitoring
+    namespace: vision-infra
   syncPolicy:
     automated:
       prune: true

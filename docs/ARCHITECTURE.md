@@ -151,6 +151,19 @@ Used for:
 
 ---
 
+### PostgreSQL (Bitnami chart)
+
+**Namespace**: `vision-infra`  
+**Secret**: `vision-postgres-credentials` (keys: `username`, `password` stored in `vision-app` namespace)  
+**Database**: `visiondb`  
+**Port**: `5432` (ClusterIP service)
+
+This relational database will store authentication data, model registry metadata and inference job history. It is optional on local dev but enabled in the cloud environment starting with Phase 1.
+
+Later phases will introduce Alembic migrations and application code that depends on this service.
+
+---
+
 ### MinIO (Bitnami chart)
 
 **Namespace**: `vision-infra`  
