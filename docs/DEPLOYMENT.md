@@ -69,6 +69,8 @@ kubectl get secrets -n vision-app
 - `vision-grafana-credentials` in `vision-monitoring` (keys: `admin-user`, `admin-password`)
 - `vision-postgres-credentials` in `vision-app` (keys: `username`, `password`)  
   *this is used by the API once the Postgres release is enabled*
+- `vision-jwt-secret` in `vision-app` (key: `key`)  
+  *JWT signing secret, set to a strong random value in production*
 
 ### Step 4: Deploy all 6 releases
 
@@ -204,6 +206,7 @@ POSTGRES_PORT=5432
 POSTGRES_DB=visiondb
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=your_postgres_password
+JWT_SECRET_KEY=your_jwt_secret_here
 ROOT_PATH=
 LOG_LEVEL=DEBUG
 EOF

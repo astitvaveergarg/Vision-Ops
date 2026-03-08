@@ -44,6 +44,11 @@ class Settings(BaseSettings):
 
     # API root path (set to /api when running behind nginx proxy)
     ROOT_PATH: str = ""
+
+    # JWT settings for authentication (Phase 2)
+    JWT_SECRET_KEY: str = "changeme-in-prod"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hour
     
     class Config:
         env_file = ".env"

@@ -122,6 +122,15 @@ env:
     value: "INFO"
   - name: ROOT_PATH
     value: "/api"
+  - name: JWT_ALGORITHM
+    value: "HS256"
+  - name: JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+    value: "60"
+  - name: JWT_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: vision-jwt-secret
+        key: key
   # PostgreSQL connection (Phase 1)
   - name: POSTGRES_HOST
     value: "postgresql.vision-infra.svc.cluster.local"
